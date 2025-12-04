@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dorito Shop - Checkout</title>
+<style>
+body { 
+    font-family: Arial, sans-serif; 
+    background: #f9f9f9; 
+    color: #333; 
+    display: flex; 
+    justify-content: center; 
+    padding: 20px; 
+}
+.panel { 
+    background: #fff; 
+    padding: 25px; 
+    border-radius: 15px; 
+    max-width: 700px; 
+    width: 100%; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+h1 { 
+    text-align: center; 
+    color: #ff4d4f; 
+}
+.button-row { 
+    display: flex; 
+    margin-bottom: 20px; 
+}
+.button-row button { 
+    flex: 1; 
+    margin: 0 5px; 
+    padding: 12px; 
+    border: none; 
+    border-radius: 10px; 
+    cursor: pointer; 
+    background: #ff9900; 
+    color: white; 
+    font-weight: bold; 
+    transition: 0.3s;
+}
+.button-row button.active { 
+    background: #ff6600; 
+}
+.tab-section { display: none; }
+.tab-section.active { display: block; }
+.row { margin: 10px 0; display: flex; flex-direction: column; }
+label { font-weight: bold; margin-bottom: 4px; }
+select,input,button { padding: 10px; border-radius: 8px; border: 1px solid #ccc; width: 100%; margin-top: 4px; font-size: 14px; }
+input[type="text"], input[type="email"], input[type="tel"], input[type="number"] { background: #fff; color: #333; }
+input:focus, select:focus { outline: none; border: 2px solid #ff4d4f; }
+.price { margin-top: 8px; font-weight: bold; color: #ff4d4f; }
+img.preview { width: 200px; height: auto; display: block; margin: 10px auto; border-radius: 10px; transition: transform 0.3s; }
+img.preview:hover { transform: scale(1.05); }
+#cartBtn { position: absolute; top: 15px; right: 15px; background: #ffcc00; color: #333; border-radius: 50%; width: 60px; height: 60px; font-size: 28px; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+#cartBtn span { position: absolute; top: -5px; right: -5px; background: red; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+#cartOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: flex-end; z-index: 1000; }
+#cartOverlay.active { display: flex; }
+#cartContent { background: #fff; width: 400px; height: 100%; padding: 20px; overflow-y: auto; position: relative; border-left: 5px solid #ff4d4f; }
+#closeCart { position: absolute; top: 10px; right: 10px; background: #ff4d4f; color: white; border: none; border-radius: 5px; width: 30px; height: 30px; cursor: pointer; }
+.cart-item { display: flex; align-items: center; justify-content: space-between; background: #ffe6cc; padding: 6px; margin-bottom: 8px; border-radius: 6px; }
+.cart-item button { background: #ff4d4f; border: none; padding: 4px 8px; border-radius: 6px; color: white; cursor: pointer; transition: 0.3s; }
+.cart-item button:hover { transform: scale(1.1); }
+#cartTotal { font-weight: bold; margin-top: 10px; color: #ff4d4f; text-align: right; }
+#checkoutBtn { width: 100%; background: #ff4d4f; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+#checkoutBtn:hover { transform: scale(1.05); }
+#checkoutForm { display: none; flex-direction: column; margin-top: 10px; background: #fff2e6; padding: 15px; border-radius: 10px; }
+.payment-methods { display: flex; justify-content: space-between; margin-top: 10px; }
+.payment-methods button { flex: 1; margin: 0 5px; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 10px; border-radius: 8px; cursor: pointer; border: none; background: #ff9900; color: white; }
+.payment-methods button img { height: 20px; }
+#paymentMessage { margin-top: 10px; color: green; font-weight: bold; text-align: center; }
+#thankYou { display: none; text-align: center; margin-top: 20px; }
+#thankYou img { width: 80%; border-radius: 10px; margin-bottom: 10px; }
+.blackfriday { text-align: center; color: #ff4d4f; font-weight: bold; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<div class="panel">
+<h1>Dorito Shop</h1>
+<div class="blackfriday">🎉 Black Friday: 20% Rabatt auf alles! 🎉</div>
+<button id="cartBtn">&#128722;<span id="cartCount">0</span></button>
+
+<div class="button-row">
+<button id="btnSpinner" class="active">Spinner</button>
+<button id="btnMotor">Motor</button>
+<button id="btnExtras">Extras</button>
+</div>
+
+<!-- Spinner -->
+<div id="spinnerSection" class="tab-section active">
+<img class="preview" src="https://motorba.com.ar/wp-content/uploads/que-es-un-rotor-de-motor-rotativo-3.webp" alt="Spinner">
+<div class="row"><label>Material</label>
+<select id="material"><option value="Gold" data-price="100">Gold (€100)</option><option value="Aluminium" data-price="20">Aluminium (€20)</option><option value="Titan" data-price="50">Titan (€50)</option></select></div>
+<div class="row"><label>Finish</label>
+<select id="finish"><option value="Matt" data-price="0">Matt</option><option value="Glänzend" data-price="5">Glänzend (+€5)</option><option value="Chrom" data-price="15">Chrom (+€15)</option></select></div>
+<div class="row"><label>Kugellager</label>
+<select id="bearing"><option value="Standard" data-price="0">Standard</option><option value="Premium" data-price="10">Premium (+€10)</option><option value="Keramik" data-price="25">Keramik (+€25)</option></select></div>
+<div class="row"><label>Menge</label><input type="number" id="quantity" min="1" value="1"></div>
+<div class="price">Preis: <span id="spinnerPrice">0.00 €</span></div>
+<button id="addCartBtn">In den Warenkorb</button>
+</div>
+
+<!-- Motor -->
+<div id="motorSection" class="tab-section">
+<img class="preview" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%2Fid%2FOIP.TaW0C8aBL8So2t-4BzgTzAHaEK%3Fpid%3DApi%26ucfimg%3D1&f=1&ipo=images" alt="Motor">
+<div class="row"><label>Menge</label><input type="number" id="quantityMotor" min="1" value="1"></div>
+<div class="price">Preis: <span id="motorPrice">3200.00 €</span></div>
+<button id="addMotorBtn">In den Warenkorb</button>
+</div>
+
+<!-- Extras -->
+<div id="extrasSection" class="tab-section">
+<div class="row"><label>Extra auswählen</label>
+<select id="extraSelect">
+<option value="Leder-Tasche" data-price="50">Leder-Tasche (€50)</option>
+<option value="Super Benzin" data-price="7">Super Benzin (€7/Liter)</option>
+<option value="Pflegekit" data-price="30">Pflegekit (€30)</option>
+</select></div>
+<div class="row"><label>Menge</label><input type="number" id="extraQty" min="1" value="1"></div>
+<div class="price">Preis: <span id="extraPrice">0.00 €</span></div>
+<button id="addExtraBtn">In den Warenkorb</button>
+</div>
+
+<!-- Warenkorb Overlay -->
+<div id="cartOverlay">
+<div id="cartContent">
+<button id="closeCart">X</button>
+<h2>Warenkorb</h2>
+<div id="cartItems"></div>
+<div id="cartTotal" class="total">Gesamt: 0.00 €</div>
+<button id="checkoutBtn">Zur Kasse</button>
+
+<div id="checkoutForm">
+<h3>Adresse & Zahlung</h3>
+<input type="text" id="name" placeholder="Name" required>
+<input type="email" id="email" placeholder="E-Mail" required>
+<input type="text" id="address" placeholder="Adresse" required>
+<input type="tel" id="phone" placeholder="Telefonnummer" required>
+<div class="payment-methods">
+<button class="paymentBtn" data-method="PayPal"><img src="https://img.icons8.com/ios-filled/50/ffffff/paypal.png"/> PayPal</button>
+<button class="paymentBtn" data-method="Apple Pay"><img src="https://img.icons8.com/ios-filled/50/ffffff/apple-pay.png"/> Apple Pay</button>
+<button class="paymentBtn" data-method="Google Pay"><img src="https://img.icons8.com/ios-filled/50/ffffff/google-pay.png"/> Google Pay</button>
+</div>
+<div id="paymentMessage"></div>
+<button id="payBtn">Jetzt Bezahlen</button>
+</div>
+
+<div id="thankYou">
+<img src="https://as1.ftcdn.net/v2/jpg/00/17/58/72/1000_F_17587299_tYm8O54g7J78S60Cxmo7cgQ9lVIHBCBu.jpg" alt="Danke">
+<h3>Danke für Ihren Einkauf!</h3>
+</div>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+// EmailJS Initialisierung
+emailjs.init("DEINE_USER_ID_HIER"); 
+const SERVICE_ID = "service_jxl286g"; 
+const TEMPLATE_ID = "DEINE_TEMPLATE_ID_HIER"; 
+
+// Tabs
+const sections = {spinner: document.getElementById('spinnerSection'), motor: document.getElementById('motorSection'), extras: document.getElementById('extrasSection')};
+document.getElementById('btnSpinner').onclick = ()=>showTab('spinner');
+document.getElementById('btnMotor').onclick = ()=>showTab('motor');
+document.getElementById('btnExtras').onclick = ()=>showTab('extras');
+function showTab(tab){ Object.keys(sections).forEach(k=>sections[k].classList.remove('active')); sections[tab].classList.add('active'); document.querySelectorAll('.button-row button').forEach(b=>b.classList.remove('active')); document.getElementById('btn'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active'); }
+
+// Preisberechnung
+function updateSpinnerPrice(){
+  let total = parseFloat(document.getElementById('material').selectedOptions[0].dataset.price) + parseFloat(document.getElementById('finish').selectedOptions[0].dataset.price) + parseFloat(document.getElementById('bearing').selectedOptions[0].dataset.price);
+  total *= parseInt(document.getElementById('quantity').value);
+  document.getElementById('spinnerPrice').textContent = (total*0.8).toFixed(2)+" €";
+}
+document.getElementById('material').onchange = updateSpinnerPrice;
+document.getElementById('finish').onchange = updateSpinnerPrice;
+document.getElementById('bearing').onchange = updateSpinnerPrice;
+document.getElementById('quantity').oninput = updateSpinnerPrice;
+updateSpinnerPrice();
+
+function updateExtraPrice(){
+  let total = parseFloat(document.getElementById('extraSelect').selectedOptions[0].dataset.price) * parseInt(document.getElementById('extraQty').value);
+  document.getElementById('extraPrice').textContent = (total*0.8).toFixed(2)+" €";
+}
+document.getElementById('extraSelect').onchange = updateExtraPrice;
+document.getElementById('extraQty').oninput = updateExtraPrice;
+updateExtraPrice();
+
+// Warenkorb
+let cart = [];
+function renderCart(){
+  const container = document.getElementById('cartItems');
+  container.innerHTML="";
+  let total=0;
+  cart.forEach((item,i)=>{
+    const div = document.createElement('div');
+    div.className="cart-item";
+    div.textContent = item.name+" x"+item.qty+" - "+(item.price*0.8*item.qty).toFixed(2)+" €";
+    const btn = document.createElement('button'); btn.textContent="X";
+    btn.onclick = ()=>{cart.splice(i,1); renderCart();}
+    div.appendChild(btn);
+    container.appendChild(div);
+    total+=item.price*0.8*item.qty;
+  });
+  document.getElementById('cartTotal').textContent = "Gesamt: "+total.toFixed(2)+" €";
+  document.getElementById('cartCount').textContent = cart.length;
+}
+
+// Items hinzufügen
+document.getElementById('addCartBtn').onclick = ()=>{
+  const price = parseFloat(document.getElementById('material').selectedOptions[0].dataset.price) + parseFloat(document.getElementById('finish').selectedOptions[0].dataset.price) + parseFloat(document.getElementById('bearing').selectedOptions[0].dataset.price);
+  const qty = parseInt(document.getElementById('quantity').value);
+  cart.push({name:`Spinner (${document.getElementById('material').value},${document.getElementById('finish').value},${document.getElementById('bearing').value})`, price, qty});
+  renderCart();
+}
+document.getElementById('addMotorBtn').onclick = ()=>{
+  const qty = parseInt(document.getElementById('quantityMotor').value);
+  cart.push({name:"Fertiger Wankelmotor", price:4000, qty});
+  renderCart();
+}
+document.getElementById('addExtraBtn').onclick = ()=>{
+  const price = parseFloat(document.getElementById('extraSelect').selectedOptions[0].dataset.price);
+  const qty = parseInt(document.getElementById('extraQty').value);
+  cart.push({name:document.getElementById('extraSelect').value, price, qty});
+  renderCart();
+}
+
+// Warenkorb öffnen/ schließen
+document.getElementById('cartBtn').onclick = ()=>document.getElementById('cartOverlay').classList.add('active');
+document.getElementById('closeCart').onclick = ()=>document.getElementById('cartOverlay').classList.remove('active');
+
+// Checkout anzeigen
+document.getElementById('checkoutBtn').onclick = ()=>document.getElementById('checkoutForm').style.display='flex';
+
+// Zahlungsart Auswahl
+document.querySelectorAll('.paymentBtn').forEach(btn=>{
+  btn.onclick = ()=>{ document.getElementById('paymentMessage').textContent = "Zahlungsart: "+btn.dataset.method; }
+});
+
+// Zahlung & E-Mail versenden
+document.getElementById('payBtn').onclick = ()=>{
+  const name = document.getElementById('name').value;
+  const email = document.getElementById('email').value;
+  const address = document.getElementById('address').value;
+  const phone = document.getElementById('phone').value;
+  if(!name||!email||!address||!phone){ alert("Bitte alle Felder ausfüllen!"); return;}
+  if(cart.length==0){ alert("Warenkorb ist leer!"); return;}
+  const orders = cart.map(o=>`${o.name} x${o.qty} - ${(o.price*0.8*o.qty).toFixed(2)} €`).join("\n");
+  const total = cart.reduce((a,o)=>a+o.price*0.8*o.qty,0);
+  const templateParams = {
+    to_name:name,
+    to_email:email,
+    order_id:Math.floor(Math.random()*1000000),
+    orders:orders,
+    cost_total:total.toFixed(2),
+    cost_shipping:"0.00",
+    cost_tax:"0.00",
+    email:email
+  };
+  emailjs.send(SERVICE_ID,TEMPLATE_ID,templateParams)
+  .then(()=>{
+    cart=[];
+    renderCart();
+    document.getElementById('checkoutForm').style.display='none';
+    document.getElementById('thankYou').style.display='block';
+    alert("E-Mail wurde gesendet!");
+  })
+  .catch(err=>{
+    console.error(err);
+    alert("Fehler beim Senden der E-Mail. Prüfe ServiceID/TemplateID/UserID!");
+  });
+}
+</script>
+</body>
+</html>
